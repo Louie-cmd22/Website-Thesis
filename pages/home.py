@@ -137,9 +137,8 @@ def show_home_page():
     # ── Hero ─────────────────────────────────────────────────────────────────
     st.markdown("""
     <div class="home-hero">
-        <h1>🌽 Corn Input Optimizer</h1>
-        <p>Find the best fertilizer combination for your cornfield.<br>
-        Enter your farm details and get a clear, practical recommendation — fast.</p>
+        <h1>🌽 Maiztimate</h1>
+        <p>Sa mais, dapat segurado ang imo ginansya, indi lang basta-basta.</p>
         <a class="hero-cta" href="?page=optimize" target="_self">Start Optimizing →</a>
     </div>
     """, unsafe_allow_html=True)

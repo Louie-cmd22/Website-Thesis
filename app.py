@@ -8,7 +8,7 @@ import streamlit as st
 
 # ── Page config (must be first Streamlit call) ──────────────────────────────
 st.set_page_config(
-    page_title="CornOptimize",
+    page_title="Maiztimate",
     page_icon="🌱",
     layout="wide",
     initial_sidebar_state="collapsed",
@@ -344,7 +344,25 @@ div.stButton > button:hover {
 .stNumberInput > div > div > input {
     border-radius: 8px;
 }
-</style>
+/* ── Footer ───────────────────────────────────────────────── */
+.footer {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    background: linear-gradient(135deg, #2d6a4f 0%, #40916c 100%);
+    color: rgba(255,255,255,0.85);
+    text-align: center;
+    padding: 1rem;
+    font-size: 0.85rem;
+    line-height: 1.4;
+    z-index: 100;
+    box-sizing: border-box;
+}
+.footer strong {
+    color: white;
+    font-weight: 600;
+}</style>
 """, unsafe_allow_html=True)
 
 
@@ -365,7 +383,7 @@ def render_navbar():
     optimize_active = "active" if st.session_state.page == "optimize" else ""
     st.markdown(f"""
     <div class="navbar">
-        <span class="navbar-brand">CornOptimize</span>
+        <span class="navbar-brand">Maiztimate</span>
         <div class="navbar-links">
             <a href="?page=home" target="_self" class="{home_active}">Home</a>
             <a href="?page=optimize" target="_self" class="{optimize_active}">Optimization</a>
@@ -383,3 +401,10 @@ if st.session_state.page == "optimize":
 else:
     from pages.home import show_home_page
     show_home_page()
+
+# ── Footer with slogan ─────────────────────────────────────────────────────
+st.markdown("""
+<div class="footer">
+    <strong>Maiztimate</strong> — <em>Sa mais, dapat segurado ang imo ginansya, indi lang basta-basta.</em>
+</div>
+""", unsafe_allow_html=True)

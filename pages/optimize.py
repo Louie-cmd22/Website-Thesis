@@ -222,7 +222,7 @@ def show_optimize_page():
         with c1:
             farm_area = st.number_input(
                 "Farm Size (hectares)",
-                min_value=1.0, max_value=100.0, value=1.0, step=0.5,
+                min_value=1, max_value=100, value=1, step=1,
                 help="Minimum 1 hectare"
             )
         with c2:
@@ -282,6 +282,18 @@ def show_optimize_page():
                 "Potassium in Soil (kg/ha)",
                 min_value=0.0, max_value=200.0, value=60.0, step=5.0
             )
+
+        # Real-time NPK warnings (compact inline display)
+        npk_warnings = []
+        if initial_n > RECOMMENDED_N:
+            npk_warnings.append(f"N: {initial_n:.0f} > {RECOMMENDED_N}")
+        if initial_p > RECOMMENDED_P:
+            npk_warnings.append(f"P: {initial_p:.0f} > {RECOMMENDED_P}")
+        if initial_k > RECOMMENDED_K:
+            npk_warnings.append(f"K: {initial_k:.0f} > {RECOMMENDED_K}")
+        
+        if npk_warnings:
+            st.info(f"⚠️ Soil nutrient(s) exceed recommended: {', '.join(npk_warnings)} kg/ha", icon="ℹ️")
 
         st.markdown("<br>", unsafe_allow_html=True)
 
@@ -373,7 +385,7 @@ def show_optimize_page():
         )
 
         total_yield  = yield_model.calculate_yield()
-        revenue      = total_yield * CORN_MARKET_PRICE
+        revenue      = total_yield * farm_area * CORN_MARKET_PRICE
         seed_cost    = cost_model.calculate_seed_cost()
         fert_cost    = cost_model.calculate_fertilizer_cost()
         ops_cost     = cost_model.calculate_operational_costs()
@@ -397,7 +409,7 @@ def show_optimize_page():
         <div class="metric-row">
             <div class="mcard mcard-green">
                 <label>Expected Yield</label>
-                <p class="mval-green">{total_yield:,.0f} kg</p>
+                <p class="mval-green">{total_yield * farm_area:,.0f} kg</p>
             </div>
             <div class="mcard mcard-green">
                 <label>Expected Revenue</label>
@@ -421,18 +433,20 @@ def show_optimize_page():
             st.markdown('<p class="res-header">🧪 Fertilizer Recommendation</p>', unsafe_allow_html=True)
             fert_df_data = _load_fertilizer_data().set_index("id")
             table_rows = ""
+            total_sacks = 0
             for fid, sacks in sorted(best['fertilizer_composition'].items()):
                 if fid not in fert_df_data.index:
                     continue
                 info = fert_df_data.loc[fid]
-                total_sacks = sacks * farm_area
+                total_sacks_item = sacks * farm_area
+                total_sacks += total_sacks_item
                 kg_per_ha   = sacks * 50
-                item_cost   = total_sacks * info["price"]
+                item_cost   = total_sacks_item * info["price"]
                 table_rows += (f'<tr>'
                     f'<td><strong>{info["name"]}</strong></td>'
                     f'<td style="text-align:center;">{sacks:.2f}</td>'
                     f'<td style="text-align:center;">{kg_per_ha:.0f} kg</td>'
-                    f'<td style="text-align:center;">{total_sacks:.2f}</td>'
+                    f'<td style="text-align:center;">{total_sacks_item:.2f}</td>'
                     f'<td style="text-align:right;">{_format_peso(item_cost)}</td>'
                     f'</tr>')
 
@@ -443,8 +457,18 @@ def show_optimize_page():
             f'<th style="text-align:center;">kg/ha</th>'
             f'<th style="text-align:center;">Total Sacks {total_label}</th><th style="text-align:right;">Cost</th></tr>'
             f'{table_rows}'
-            f'<tr><td colspan="4">Total Fertilizer Cost</td><td style="text-align:right;">{_format_peso(fert_cost)}</td></tr>'
+            f'<tr><td colspan="3" style="text-align:right;"><strong>Total:</strong></td><td style="text-align:center;"><strong>{total_sacks:.2f}</strong></td><td style="text-align:right;">{_format_peso(fert_cost)}</td></tr>'
             f'</table>',
+            unsafe_allow_html=True)
+
+            # Seed sacks display
+            seed_sacks = (best['planting_density'] * farm_area) / 20000  # ~20,000 seeds per sack (standard)
+            st.markdown(
+            f'<div style="background:#ffe8e8;border-left:4px solid #d32f2f;border-radius:0 8px 8px 0;padding:0.75rem 1rem;margin-top:1rem;">'
+            f'<p style="margin:0;color:#666;font-size:0.8rem;text-transform:uppercase;letter-spacing:0.6px;font-weight:600;">🌱 Seed Requirement</p>'
+            f'<p style="margin:0.3rem 0 0 0;color:#d32f2f;font-size:1.3rem;font-weight:700;">{seed_sacks:.2f} sacks</p>'
+            f'<p style="margin:0.2rem 0 0 0;color:#999;font-size:0.78rem;">~{best["planting_density"]:,.0f} plants/ha × {farm_area} ha</p>'
+            f'</div>',
             unsafe_allow_html=True)
 
         with right_col:
@@ -455,8 +479,7 @@ def show_optimize_page():
             f'<div class="icard" style="text-align:center;">'
             f'<label style="color:#888;font-size:0.75rem;text-transform:uppercase;letter-spacing:0.8px;">Recommended</label>'
             f'<p style="color:#2d6a4f;font-size:2rem;font-weight:700;margin:0.2rem 0;">{recommended_density:,.0f}</p>'
-            f'<p style="color:#888;font-size:0.82rem;margin:0 0 0.6rem 0;">plants per hectare</p>'
-            f'<p style="color:#aaa;font-size:0.78rem;margin:0;">DA optimal for {seed_variety}: <strong style="color:#555;">{optimal_density:,.0f}</strong> plants/ha</p>'
+            f'<p style="color:#888;font-size:0.82rem;margin:0;">plants per hectare</p>'
             f'</div>',
             unsafe_allow_html=True)
 
@@ -474,7 +497,7 @@ def show_optimize_page():
                     f'<div style="margin-bottom:0.65rem;">'
                     f'<div style="display:flex;justify-content:space-between;font-size:0.78rem;color:#555;">'
                     f'<span><strong>{label}</strong></span>'
-                    f'<span>{delivered:.0f}/{recommended} kg/ha ({pct:.0f}%)</span>'
+                    f'<span>{delivered:.0f}/{recommended:.0f} kg ({pct:.0f}%)</span>'
                     f'</div>'
                     f'<div style="background:#e0ece4;border-radius:6px;height:9px;margin-top:4px;overflow:hidden;">'
                     f'<div style="background:{color};width:{bar_w}%;height:100%;border-radius:6px;"></div>'
@@ -484,10 +507,10 @@ def show_optimize_page():
 
             st.markdown(
             f'<div class="icard">'
-            f'{_npk_bar("Nitrogen (N)", total_n, RECOMMENDED_N, n_pct)}'
-            f'{_npk_bar("Phosphorus (P)", total_p, RECOMMENDED_P, p_pct)}'
-            f'{_npk_bar("Potassium (K)", total_k, RECOMMENDED_K, k_pct)}'
-            f'<p style="color:#aaa;font-size:0.73rem;margin-top:0.4rem;">Target range: 85% – 115% of DA recommendation</p>'
+            f'{_npk_bar("Nitrogen (N)", total_n * farm_area, RECOMMENDED_N * farm_area, n_pct)}'
+            f'{_npk_bar("Phosphorus (P)", total_p * farm_area, RECOMMENDED_P * farm_area, p_pct)}'
+            f'{_npk_bar("Potassium (K)", total_k * farm_area, RECOMMENDED_K * farm_area, k_pct)}'
+            f'<p style="color:#aaa;font-size:0.73rem;margin-top:0.4rem;">Total across {farm_area} hectare(s) • Target range: 85% – 115%</p>'
             f'</div>',
             unsafe_allow_html=True)
 
