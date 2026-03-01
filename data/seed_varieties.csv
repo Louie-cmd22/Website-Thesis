@@ -1,0 +1,4 @@
+id,name,row_spacing_cm,hill_spacing_cm,seeds_per_hill,plants_per_ha,price_per_kg,seeds_per_kg
+S01,Glutinous,60,30,2,55556,1500,9259
+S02,Hybrid,70,20,1,71429,689,3888
+S03,OPV,75,25,1.5,53333,556,3888

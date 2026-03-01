@@ -1,0 +1,21 @@
+# ============================================================================
+# Requirements for Corn Input Optimization Website
+# ============================================================================
+#
+# Installation:
+#   pip install -r requirements.txt
+#
+# ============================================================================
+
+# Web Framework
+streamlit>=1.28.0
+
+# Data Processing
+pandas>=2.0.0
+numpy>=1.24.0
+
+# Visualization
+plotly>=5.0.0
+
+# Scientific Computing (needed by optimization models)
+scipy>=1.11.0
