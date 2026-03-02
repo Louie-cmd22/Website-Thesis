@@ -184,11 +184,6 @@ def show_home_page():
             <div><h4>Cost &amp; Profit Breakdown</h4>
             <p>Total input cost, expected revenue, and estimated net profit.</p></div>
         </div>
-        <div class="benefit-item">
-            <div class="bicon">📊</div>
-            <div><h4>Visual Comparison</h4>
-            <p>Charts comparing GA vs Memetic Algorithm results side by side.</p></div>
-        </div>
     </div>
     """, unsafe_allow_html=True)
 
