@@ -21,9 +21,18 @@ def _season_label(month: int) -> str:
     return "Wet Season" if month in WET_SEASON_MONTHS else "Dry Season"
 
 
+@st.cache_data
 def _load_fertilizer_data():
+    """Load fertilizer data with caching to avoid repeated CSV reads."""
     data_dir = Path(__file__).parent.parent / "data"
     return pd.read_csv(data_dir / "region_6_fertilizers.csv")
+
+
+@st.cache_data
+def _load_seed_data():
+    """Load seed variety data with caching to avoid repeated CSV reads."""
+    data_dir = Path(__file__).parent.parent / "data"
+    return pd.read_csv(data_dir / "seed_varieties.csv").set_index("name")
 
 
 def _format_peso(value: float) -> str:
@@ -463,8 +472,7 @@ def show_optimize_page():
 
             # Seed sacks display — use same CSV-based calculation as cost model
             # 1 sack = 9 kg (DA standard: Hybrid/OPV ≈ 2 bags, Glutinous ≈ 1 bag per ha)
-            _seed_data_path = Path(__file__).parent.parent / "data" / "seed_varieties.csv"
-            _seed_csv = pd.read_csv(_seed_data_path).set_index("name")
+            _seed_csv = _load_seed_data()
             _sv = _seed_csv.loc[seed_variety]
             _total_seeds = best['planting_density'] * _sv["seeds_per_hill"] * farm_area
             seed_kg       = _total_seeds / _sv["seeds_per_kg"]
