@@ -142,12 +142,19 @@ class YieldModel:
         return factor_n * factor_p * factor_k
 
     def calculate_density_factor(self):
-        """Calculate how plant density affects corn yield (Gaussian)."""
+        """
+        Calculate how plant density affects corn yield (Gaussian).
+
+        Peak is 1.0 at the variety's optimal density so that yield can never
+        exceed BASE_YIELD_POTENTIAL (5,000 kg/ha) when all other factors are
+        also at their maximum of 1.0.  Deviating from optimal density reduces
+        the factor smoothly via a Gaussian curve (σ = 0.15).
+        """
         optimal_density = self.OPTIMAL_DENSITY_BY_VARIETY[self.seed_variety]
         deviation = (self.planting_density - optimal_density) / optimal_density
         sigma = 0.15
-        density_factor = 1.2 * math.exp(-(deviation ** 2) / (2 * sigma ** 2))
-        return max(0.3, min(density_factor, 1.2))
+        density_factor = 1.0 * math.exp(-(deviation ** 2) / (2 * sigma ** 2))
+        return max(0.3, min(density_factor, 1.0))
 
     def _get_ph_multiplier(self, ph):
         """Convert soil pH to a multiplier."""

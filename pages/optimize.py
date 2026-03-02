@@ -461,13 +461,19 @@ def show_optimize_page():
             f'</table>',
             unsafe_allow_html=True)
 
-            # Seed sacks display
-            seed_sacks = (best['planting_density'] * farm_area) / 20000  # ~20,000 seeds per sack (standard)
+            # Seed sacks display — use same CSV-based calculation as cost model
+            # 1 sack = 9 kg (DA standard: Hybrid/OPV ≈ 2 bags, Glutinous ≈ 1 bag per ha)
+            _seed_data_path = Path(__file__).parent.parent / "data" / "seed_varieties.csv"
+            _seed_csv = pd.read_csv(_seed_data_path).set_index("name")
+            _sv = _seed_csv.loc[seed_variety]
+            _total_seeds = best['planting_density'] * _sv["seeds_per_hill"] * farm_area
+            seed_kg       = _total_seeds / _sv["seeds_per_kg"]
+            seed_sacks    = seed_kg / 9  # 9 kg per sack (DA standard bag size)
             st.markdown(
             f'<div style="background:#ffe8e8;border-left:4px solid #d32f2f;border-radius:0 8px 8px 0;padding:0.75rem 1rem;margin-top:1rem;">'
             f'<p style="margin:0;color:#666;font-size:0.8rem;text-transform:uppercase;letter-spacing:0.6px;font-weight:600;">🌱 Seed Requirement</p>'
-            f'<p style="margin:0.3rem 0 0 0;color:#d32f2f;font-size:1.3rem;font-weight:700;">{seed_sacks:.2f} sacks</p>'
-            f'<p style="margin:0.2rem 0 0 0;color:#999;font-size:0.78rem;">~{best["planting_density"]:,.0f} plants/ha × {farm_area} ha</p>'
+            f'<p style="margin:0.3rem 0 0 0;color:#d32f2f;font-size:1.3rem;font-weight:700;">{seed_sacks:.2f} sacks ({seed_kg:.1f} kg)</p>'
+            f'<p style="margin:0.2rem 0 0 0;color:#999;font-size:0.78rem;">~{best["planting_density"]:,.0f} plants/ha × {farm_area} ha · 9 kg/sack</p>'
             f'</div>',
             unsafe_allow_html=True)
 
