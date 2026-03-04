@@ -32,6 +32,7 @@ class CostModel:
         "shared": {
             "planting": 5000,
             "fert_app_labor": 6000,
+            "harvesting": 10000,
         },
         "Hybrid": {
             "herbicide_labor_1": 2000,

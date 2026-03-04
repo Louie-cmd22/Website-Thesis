@@ -436,6 +436,7 @@ def show_optimize_page():
         """, unsafe_allow_html=True)
 
         # ── Fertilizer & Planting Density ────────────────────────────────────
+        _seed_csv = _load_seed_data()  # Load once for both columns
         left_col, right_col = st.columns([3, 2])
 
         with left_col:
@@ -470,33 +471,6 @@ def show_optimize_page():
             f'</table>',
             unsafe_allow_html=True)
 
-            # Seed sacks display — use same CSV-based calculation as cost model
-            # 1 sack = 9 kg (DA standard: Hybrid/OPV ≈ 2 bags, Glutinous ≈ 1 bag per ha)
-            _seed_csv = _load_seed_data()
-            _sv = _seed_csv.loc[seed_variety]
-            _total_seeds = best['planting_density'] * _sv["seeds_per_hill"] * farm_area
-            seed_kg       = _total_seeds / _sv["seeds_per_kg"]
-            seed_sacks    = seed_kg / 9  # 9 kg per sack (DA standard bag size)
-            st.markdown(
-            f'<div style="background:#ffe8e8;border-left:4px solid #d32f2f;border-radius:0 8px 8px 0;padding:0.75rem 1rem;margin-top:1rem;">'
-            f'<p style="margin:0;color:#666;font-size:0.8rem;text-transform:uppercase;letter-spacing:0.6px;font-weight:600;">🌱 Seed Requirement</p>'
-            f'<p style="margin:0.3rem 0 0 0;color:#d32f2f;font-size:1.3rem;font-weight:700;">{seed_sacks:.2f} sacks ({seed_kg:.1f} kg)</p>'
-            f'<p style="margin:0.2rem 0 0 0;color:#999;font-size:0.78rem;">~{best["planting_density"]:,.0f} plants/ha × {farm_area} ha · 9 kg/sack</p>'
-            f'</div>',
-            unsafe_allow_html=True)
-
-        with right_col:
-            st.markdown('<p class="res-header">🌱 Planting Density</p>', unsafe_allow_html=True)
-            optimal_density    = CHROMOSOME_CONSTRAINTS['planting_density'][seed_variety]['optimal']
-            recommended_density = best['planting_density']
-            st.markdown(
-            f'<div class="icard" style="text-align:center;">'
-            f'<label style="color:#888;font-size:0.75rem;text-transform:uppercase;letter-spacing:0.8px;">Recommended</label>'
-            f'<p style="color:#2d6a4f;font-size:2rem;font-weight:700;margin:0.2rem 0;">{recommended_density:,.0f}</p>'
-            f'<p style="color:#888;font-size:0.82rem;margin:0;">plants per hectare</p>'
-            f'</div>',
-            unsafe_allow_html=True)
-
             # NPK Summary
             st.markdown('<p class="res-header">🧬 Nutrient Summary (NPK)</p>', unsafe_allow_html=True)
 
@@ -520,11 +494,37 @@ def show_optimize_page():
                 )
 
             st.markdown(
-            f'<div class="icard">'
+            f'<div class="icard" style="margin-top:1rem;">'
             f'{_npk_bar("Nitrogen (N)", total_n * farm_area, RECOMMENDED_N * farm_area, n_pct)}'
             f'{_npk_bar("Phosphorus (P)", total_p * farm_area, RECOMMENDED_P * farm_area, p_pct)}'
             f'{_npk_bar("Potassium (K)", total_k * farm_area, RECOMMENDED_K * farm_area, k_pct)}'
             f'<p style="color:#aaa;font-size:0.73rem;margin-top:0.4rem;">Total across {farm_area} hectare(s) • Target range: 85% – 115%</p>'
+            f'</div>',
+            unsafe_allow_html=True)
+
+        with right_col:
+            st.markdown('<p class="res-header">🌱 Planting Density</p>', unsafe_allow_html=True)
+            optimal_density    = CHROMOSOME_CONSTRAINTS['planting_density'][seed_variety]['optimal']
+            recommended_density = best['planting_density']
+            st.markdown(
+            f'<div class="icard" style="text-align:center;">'
+            f'<label style="color:#888;font-size:0.75rem;text-transform:uppercase;letter-spacing:0.8px;">Recommended</label>'
+            f'<p style="color:#2d6a4f;font-size:2rem;font-weight:700;margin:0.2rem 0;">{recommended_density:,.0f}</p>'
+            f'<p style="color:#888;font-size:0.82rem;margin:0;">plants per hectare</p>'
+            f'</div>',
+            unsafe_allow_html=True)
+
+            # Seed sacks display — use same CSV-based calculation as cost model
+            # 1 sack = 9 kg (DA standard: Hybrid/OPV ≈ 2 bags, Glutinous ≈ 1 bag per ha)
+            _sv = _seed_csv.loc[seed_variety]
+            _total_seeds = best['planting_density'] * _sv["seeds_per_hill"] * farm_area
+            seed_kg       = _total_seeds / _sv["seeds_per_kg"]
+            seed_sacks    = seed_kg / 9  # 9 kg per sack (DA standard bag size)
+            st.markdown(
+            f'<div class="icard" style="margin-top:1rem;">'
+            f'<h4>🌱 Seed Requirement</h4>'
+            f'<p style="color:#2d6a4f;font-size:1.5rem;font-weight:700;margin:0.3rem 0;">{seed_sacks:.2f} sacks ({seed_kg:.1f} kg)</p>'
+            f'<p style="color:#888;font-size:0.82rem;margin:0;">{_sv["row_spacing_cm"]:.0f} cm rows · {_sv["hill_spacing_cm"]:.0f} cm hill spacing · {_sv["seeds_per_hill"]:.1f} seed/hill</p>'
             f'</div>',
             unsafe_allow_html=True)
 
@@ -555,17 +555,52 @@ def show_optimize_page():
             unsafe_allow_html=True)
 
         with cb2:
-            profit_val_color = "#1b5e20" if profit >= 0 else "#b71c1c"
+            # Breakdown operational costs with specific ordering
+            variety_name = seed_variety  # seed_variety is already the variety name
+            ops_breakdown_html = '<div style="margin-bottom:0.6rem;"><strong style="color:#2d6a4f;font-size:0.82rem;">Operational</strong>'
+            
+            if topography == "Plain":
+                # Plain layout: Land Prep, Planting, Fert App 1, Fert App 2, (Herbicide/Weeding Labor), Harvesting
+                items_order = [
+                    ("Land Prep", 6000),
+                    ("Planting", 5000),
+                    ("Fert Application 1", 3000),
+                    ("Fert Application 2", 3000),
+                    ("Herbicide Labor" if variety_name == "Hybrid" else "Weeding Labor", 2000),
+                    ("Harvesting", 10000),
+                ]
+            else:
+                # Elevated layout: Planting, Fert App Labor, Herbicide Labor 1, Herbicide Labor 2, Harvesting
+                items_order = [
+                    ("Planting", 5000),
+                    ("Fert Application", 6000),
+                    ("Herbicide Labor 1", 2000),
+                    ("Herbicide Labor 2", 2000),
+                    ("Harvesting", 10000),
+                ]
+            
+            for label, cost_per_ha in items_order:
+                total_cost_item = cost_per_ha * farm_area
+                ops_breakdown_html += f'<div style="display:flex;justify-content:space-between;font-size:0.75rem;color:#666;margin-top:0.25rem;"><span>{label}</span><span>{_format_peso(total_cost_item)}</span></div>'
+            
+            ops_breakdown_html += f'<div style="display:flex;justify-content:space-between;font-size:0.77rem;font-weight:600;color:#2d6a4f;margin-top:0.35rem;border-top:1px solid #dde8e1;padding-top:0.35rem;"><span>Subtotal</span><span>{_format_peso(ops_cost)}</span></div></div>'
+            
+            # Herbicide breakdown
+            herbicide_html = '<div><strong style="color:#2d6a4f;font-size:0.82rem;">Herbicide</strong>'
+            if seed_variety == "Hybrid":
+                gallon_req = cost_model.HERBICIDE_GALLONS_REQUIRED[topography]
+                gallon_cost = cost_model.HERBICIDE_COST_PER_GALLON
+                herbicide_html += f'<div style="display:flex;justify-content:space-between;font-size:0.75rem;color:#666;margin-top:0.25rem;"><span>{gallon_req} gal × ₱{gallon_cost:,.0f}/gal</span><span>{_format_peso(gallon_cost * gallon_req * farm_area)}</span></div>'
+                herbicide_html += f'<div style="display:flex;justify-content:space-between;font-size:0.77rem;font-weight:600;color:#2d6a4f;margin-top:0.35rem;border-top:1px solid #dde8e1;padding-top:0.35rem;"><span>Subtotal</span><span>{_format_peso(herb_cost)}</span></div>'
+            else:
+                herbicide_html += f'<div style="font-size:0.75rem;color:#999;margin-top:0.25rem;font-style:italic;">N/A ({seed_variety} variety)</div>'
+            herbicide_html += '</div>'
+            
             st.markdown(
-            f'<div class="icard" style="text-align:center;">'
-            f'<p style="color:#888;font-size:0.73rem;text-transform:uppercase;letter-spacing:0.8px;margin:0;">Revenue</p>'
-            f'<p style="color:#1b5e20;font-size:1.3rem;font-weight:700;margin:0.15rem 0;">{_format_peso(revenue)}</p>'
-            f'<p style="color:#aaa;font-size:0.75rem;margin:0 0 0.75rem 0;">{total_yield:,.0f} kg × ₱{CORN_MARKET_PRICE}/kg</p>'
-            f'<p style="color:#888;font-size:0.73rem;text-transform:uppercase;letter-spacing:0.8px;margin:0;">Total Cost</p>'
-            f'<p style="color:#b71c1c;font-size:1.3rem;font-weight:700;margin:0.15rem 0 0.75rem 0;">{_format_peso(total_cost)}</p>'
-            f'<div style="border-top:1px solid #dde8e1;padding-top:0.7rem;">'
-            f'<p style="color:#888;font-size:0.73rem;text-transform:uppercase;letter-spacing:0.8px;margin:0;">Net Profit</p>'
-            f'<p style="color:{profit_val_color};font-size:1.6rem;font-weight:700;margin:0.15rem 0 0 0;">{_format_peso(profit)}</p>'
+            f'<div class="icard">'
+            f'{ops_breakdown_html}'
+            f'<div style="border-top:1px solid #dde8e1;padding-top:0.75rem;margin-top:0.75rem;">'
+            f'{herbicide_html}'
             f'</div></div>',
             unsafe_allow_html=True)
 
