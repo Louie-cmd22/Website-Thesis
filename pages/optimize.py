@@ -14,9 +14,6 @@ from config.params import (
     WET_SEASON_MONTHS, DRY_SEASON_MONTHS,
 )
 
-
-# ── Helpers ─────────────────────────────────────────────────────────────────
-
 def _season_label(month: int) -> str:
     return "Wet Season" if month in WET_SEASON_MONTHS else "Dry Season"
 
@@ -41,9 +38,6 @@ def _format_peso(value: float) -> str:
 
 def _format_kg(value: float) -> str:
     return f"{value:,.0f} kg"
-
-
-# ── Main page function ─────────────────────────────────────────────────────
 
 def show_optimize_page():
 
@@ -212,7 +206,6 @@ def show_optimize_page():
     </style>
     """, unsafe_allow_html=True)
 
-    # ── Page Title ───────────────────────────────────────────────────────────
     st.markdown("""
     <div class="page-title">
         <h1>🌾 Optimize Your Farm</h1>
@@ -220,12 +213,8 @@ def show_optimize_page():
     </div>
     """, unsafe_allow_html=True)
 
-    # ────────────────────────────────────────────────────────────────────────
-    # INPUT FORM
-    # ────────────────────────────────────────────────────────────────────────
     with st.form("farm_form"):
 
-        # ── Farm Information ────────────────────────────────────────────────
         st.markdown('<p class="form-group-title">Farm Information</p>', unsafe_allow_html=True)
         c1, c2, c3 = st.columns(3)
         with c1:
@@ -251,7 +240,6 @@ def show_optimize_page():
 
         st.markdown("<br>", unsafe_allow_html=True)
 
-        # ── Soil Conditions ─────────────────────────────────────────────────
         st.markdown('<p class="form-group-title">Soil Conditions</p>', unsafe_allow_html=True)
         st.markdown("""
         <div class="tip-box">
@@ -292,7 +280,6 @@ def show_optimize_page():
                 min_value=0.0, max_value=200.0, value=60.0, step=5.0
             )
 
-        # Real-time NPK warnings (compact inline display)
         npk_warnings = []
         if initial_n > RECOMMENDED_N:
             npk_warnings.append(f"N: {initial_n:.0f} > {RECOMMENDED_N}")
@@ -306,7 +293,6 @@ def show_optimize_page():
 
         st.markdown("<br>", unsafe_allow_html=True)
 
-        # ── Planting Conditions ─────────────────────────────────────────────
         st.markdown('<p class="form-group-title">Planting Conditions</p>', unsafe_allow_html=True)
         c9, c10 = st.columns(2)
         with c9:
@@ -332,9 +318,6 @@ def show_optimize_page():
             use_container_width=True
         )
 
-    # ────────────────────────────────────────────────────────────────────────
-    # RUN OPTIMIZATION
-    # ────────────────────────────────────────────────────────────────────────
     if submitted:
         farm_params = {
             'farm_area_ha': farm_area,
@@ -370,7 +353,6 @@ def show_optimize_page():
             st.warning("The optimizer could not find a viable plan. Try adjusting your soil nutrients or farm parameters.")
             return
 
-        # ── Compute results ──────────────────────────────────────────────────
         from models.yield_model import YieldModel
         from models.cost_model import CostModel
 
@@ -410,7 +392,6 @@ def show_optimize_page():
         total_p = initial_p + p_from_fert
         total_k = initial_k + k_from_fert
 
-        # ── Key Metrics ──────────────────────────────────────────────────────
         st.markdown('<p class="res-header">✅ Your Optimized Farming Plan</p>', unsafe_allow_html=True)
 
         profit_color = "mval-profit" if profit >= 0 else "mval-red"
@@ -435,7 +416,6 @@ def show_optimize_page():
         </div>
         """, unsafe_allow_html=True)
 
-        # ── Fertilizer & Planting Density ────────────────────────────────────
         _seed_csv = _load_seed_data()  # Load once for both columns
         left_col, right_col = st.columns([3, 2])
 
@@ -471,7 +451,6 @@ def show_optimize_page():
             f'</table>',
             unsafe_allow_html=True)
 
-            # NPK Summary
             st.markdown('<p class="res-header">🧬 Nutrient Summary (NPK)</p>', unsafe_allow_html=True)
 
             n_pct = (total_n / RECOMMENDED_N * 100) if RECOMMENDED_N else 0
@@ -528,7 +507,6 @@ def show_optimize_page():
             f'</div>',
             unsafe_allow_html=True)
 
-        # ── Cost Breakdown ───────────────────────────────────────────────────
         st.markdown('<p class="res-header">💰 Cost Breakdown</p>', unsafe_allow_html=True)
         cb1, cb2 = st.columns([3, 2])
 
@@ -604,7 +582,6 @@ def show_optimize_page():
             f'</div></div>',
             unsafe_allow_html=True)
 
-        # ── Farm Conditions Summary ────────────────────────────────────────
         st.markdown('<p class="res-header">📋 Your Farm Conditions</p>', unsafe_allow_html=True)
         season     = _season_label(planting_month)
         irrig_text = "Yes" if irrigation == "Yes" else "No"

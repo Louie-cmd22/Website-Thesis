@@ -30,7 +30,6 @@ class Optimizer:
         best_solution = optimizer.run()
     """
 
-    # Local search constants
     BALANCED_FERTILIZER_ID = 'F05'
     NEIGHBOR_DENSITY_ADJUSTMENT = 1000
     NEIGHBOR_FERTILIZER_ADJUSTMENT = 0.1
@@ -42,7 +41,6 @@ class Optimizer:
         if random_seed is not None:
             random.seed(random_seed)
 
-        # Algorithm params
         self.population_size = ALGORITHM_PARAMS['population_size']
         self.max_generations = ALGORITHM_PARAMS['max_generations']
         self.mutation_rate = ALGORITHM_PARAMS['mutation_rate']
@@ -50,12 +48,10 @@ class Optimizer:
         self.elitism_count = ALGORITHM_PARAMS['elitism_count']
         self.mutation_step_size = ALGORITHM_PARAMS['mutation_step_size']
 
-        # Local search params
         self.local_search_probability = LOCAL_SEARCH_PARAMS['local_search_probability']
         self.no_improvement_threshold = LOCAL_SEARCH_PARAMS['no_improvement_threshold']
         self.max_iterations_safety_limit = LOCAL_SEARCH_PARAMS['max_iterations_safety_limit']
 
-        # State
         self.population = []
         self.fitness_scores = []
         self.best_solution = None
@@ -64,12 +60,10 @@ class Optimizer:
         self.fitness_history = []
         self.local_search_count = 0
 
-        # Load data
         self.data_dir = Path(__file__).parent.parent / 'data'
         self.fertilizer_data = pd.read_csv(self.data_dir / 'region_6_fertilizers.csv')
         self.constraints = CHROMOSOME_CONSTRAINTS
 
-        # Fitness calculator
         self.fitness_calculator = Fitness(
             farm_area_ha=farm_params['farm_area_ha'],
             seed_variety=seed_variety,
@@ -85,8 +79,6 @@ class Optimizer:
             irrigation_available=farm_params['irrigation_available'],
             data_dir=str(self.data_dir)
         )
-
-    # ---- Population Initialization ----
 
     def initialize_population(self):
         """Create initial population: 50% smart + 50% random."""
@@ -116,8 +108,6 @@ class Optimizer:
             if valid:
                 self.population.append(chrom)
 
-    # ---- Fitness Evaluation ----
-
     def _evaluate_chromosome(self, chromosome):
         """Calculate fitness for a single chromosome."""
         self.fitness_calculator.planting_density = chromosome['planting_density']
@@ -140,8 +130,6 @@ class Optimizer:
 
         gen_best = max(self.fitness_scores) if self.fitness_scores else float('-inf')
         self.fitness_history.append(gen_best)
-
-    # ---- Genetic Operators ----
 
     def selection(self):
         """Tournament selection."""
@@ -216,8 +204,6 @@ class Optimizer:
                     repaired['fertilizer_composition'][fid] * ratio)
 
         return repaired
-
-    # ---- Local Search (Hill Climbing) ----
 
     def _calculate_nutrient_percentages(self, chromosome):
         """Calculate current nutrient levels as percentages of recommended."""
@@ -373,8 +359,6 @@ class Optimizer:
         self.local_search_count += 1
         return best
 
-    # ---- Generation Loop ----
-
     def run_generation(self):
         """Run one generation of MA (GA + selective local search)."""
         elite_idx = sorted(range(len(self.population)),
@@ -400,8 +384,6 @@ class Optimizer:
         self.population = elites + new_pop
         self.evaluate_fitness()
         self.generation += 1
-
-    # ---- Main Run ----
 
     def run(self, progress_callback=None):
         """

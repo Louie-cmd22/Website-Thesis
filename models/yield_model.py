@@ -1,12 +1,23 @@
 """
-Yield Model for Corn Input Optimization
-========================================
+Yield Model for Corn Input Optimization - Website Edition
+==========================================================
 Calculates corn yield based on agronomic factors.
 
-Adapted from Comparative Analysis project.
+INDEPENDENT IMPLEMENTATION:
+- Does NOT import from Comparative-Analysis
+- All logic and calculations are self-contained in Website
 
-Final_Yield = Base_Yield × Nutrient_Factor × Density_Factor × Soil_Factor ×
-              Seasonal_Factor × Pest_Factor × Land_Prep_Factor
+Yield Calculation:
+    Final_Yield = Base_Yield × Nutrient_Factor × Density_Factor × Soil_Factor ×
+                  Seasonal_Factor × Pest_Factor × Land_Prep_Factor
+
+The model combines 6 agronomic factors to estimate realistic corn productivity:
+1. Nutrient_Factor: NPK adequacy (85-115% optimal range)
+2. Density_Factor: Planting population matching variety requirements
+3. Soil_Factor: Soil type and pH suitability
+4. Seasonal_Factor: Moisture availability (wet/dry season + irrigation)
+5. Pest_Factor: Pest pressure variation by season
+6. Land_Prep_Factor: Topography impact on productivity
 """
 
 import pandas as pd
@@ -81,6 +92,18 @@ class YieldModel:
 
         seed_data = pd.read_csv(self.data_dir / "seed_varieties.csv")
         self.seeds = seed_data.set_index("id").to_dict(orient="index")
+
+        if farm_area_ha < 1.0:
+            raise ValueError(f"Farm area must be at least 1 hectare, got {farm_area_ha}")
+
+        if topography not in ["Plain", "Elevated"]:
+            raise ValueError(f"Invalid topography: {topography}. Must be 'Plain' or 'Elevated'")
+
+        if soil_type not in self.SOIL_TYPE_FACTORS:
+            raise ValueError(f"Invalid soil type: {soil_type}. Must be one of {list(self.SOIL_TYPE_FACTORS.keys())}")
+
+        if planting_month < 1 or planting_month > 12:
+            raise ValueError(f"Planting month must be between 1 and 12, got {planting_month}")
 
     def get_synergistic_nutrient_requirements(self):
         """Calculate dynamic nutrient requirements based on planting density."""

@@ -50,8 +50,7 @@ def validate_chromosome(chromosome, seed_variety, fertilizer_data, farm_area_ha,
         if sacks <= 0:
             errors.append(f"Fertilizer {fert_id} has non-positive amount")
 
-    # check max fertilizer types (soft constraint)
-    if 'max_fertilizer_types' in constraints['fertilizer']:
+        if 'max_fertilizer_types' in constraints['fertilizer']:
         max_types = constraints['fertilizer']['max_fertilizer_types']
         num_types = len(fert_comp)
         if num_types > max_types:
@@ -74,7 +73,6 @@ def generate_random_chromosome(fertilizer_data, seed_variety, constraints, farm_
         avg = max_total / k
         chromosome['fertilizer_composition'][fert_id] = random.uniform(0.1, avg * 2)
 
-    # Scale down if over limit
     total = sum(chromosome['fertilizer_composition'].values())
     if total > max_total:
         ratio = max_total / total
@@ -128,7 +126,6 @@ def generate_smart_chromosome(fertilizer_data, seed_variety, farm_params, constr
 
     candidates = []
 
-    # Grid search: Complete (F05) + Urea (F01) + MOP (F06)
     for complete_sacks in [0.5, 1.0, 1.5, 2.0, 2.5, 3.0, 3.5, 4.0, 4.5, 5.0, 5.5, 6.0]:
         for urea_sacks in [0.0, 0.5, 1.0, 1.5, 2.0, 2.5, 3.0, 3.5, 4.0]:
             for k_sacks in [0.0, 0.3, 0.6, 1.0, 1.5]:
@@ -136,7 +133,6 @@ def generate_smart_chromosome(fertilizer_data, seed_variety, farm_params, constr
                 candidate = {k: v for k, v in candidate.items() if v > 0}
                 candidates.append(candidate)
 
-    # Also try DAP (F07) combinations for P-heavy scenarios
     for dap_sacks in [0.2, 0.4, 0.6, 0.8, 1.0, 1.2]:
         for urea_sacks in [1.0, 2.0, 3.0, 4.0]:
             for k_sacks in [0.3, 0.6, 1.0]:

@@ -134,7 +134,6 @@ def show_home_page():
     </style>
     """, unsafe_allow_html=True)
 
-    # ── Hero ─────────────────────────────────────────────────────────────────
     st.markdown("""
     <div class="home-hero">
         <h1>🌽 Maiztimate</h1>
@@ -143,7 +142,6 @@ def show_home_page():
     </div>
     """, unsafe_allow_html=True)
 
-    # ── How It Works ─────────────────────────────────────────────────────────
     st.markdown('<p class="slabel">How It Works</p>', unsafe_allow_html=True)
     st.markdown("""
     <div class="steps-row">
@@ -165,7 +163,6 @@ def show_home_page():
     </div>
     """, unsafe_allow_html=True)
 
-    # ── What You'll Get ───────────────────────────────────────────────────────
     st.markdown('<p class="slabel">What You\'ll Get</p>', unsafe_allow_html=True)
     st.markdown("""
     <div class="benefits-row">
@@ -187,7 +184,6 @@ def show_home_page():
     </div>
     """, unsafe_allow_html=True)
 
-    # ── Footer ────────────────────────────────────────────────────────────────
     st.markdown("""
     <div class="home-note">
         Based on DA Region 6 validated data (2026) &nbsp;·&nbsp; For corn farmers in the Philippines

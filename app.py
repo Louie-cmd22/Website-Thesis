@@ -6,7 +6,6 @@ Main entry point. Configures the Streamlit multipage app.
 
 import streamlit as st
 
-# ── Page config (must be first Streamlit call) ──────────────────────────────
 st.set_page_config(
     page_title="Maiztimate",
     page_icon="🌱",
@@ -14,7 +13,6 @@ st.set_page_config(
     initial_sidebar_state="collapsed",
 )
 
-# ── Shared CSS applied to every page ────────────────────────────────────────
 st.markdown("""
 <style>
 /* ── Global Reset ─────────────────────────────────────────── */
@@ -365,8 +363,6 @@ div.stButton > button:hover {
 }</style>
 """, unsafe_allow_html=True)
 
-
-# ── Determine current page from query params (single source of truth) ──────
 _qp = st.query_params.get("page", "home")
 if _qp not in ("home", "optimize"):
     _qp = "home"
@@ -376,8 +372,6 @@ st.session_state.page = _qp
 def navigate_to(page_name: str):
     st.session_state.page = page_name
 
-
-# ── Render navbar ──────────────────────────────────────────────────────────
 def render_navbar():
     home_active = "active" if st.session_state.page == "home" else ""
     optimize_active = "active" if st.session_state.page == "optimize" else ""
@@ -394,7 +388,6 @@ def render_navbar():
 
 render_navbar()
 
-# ── Route to the correct page ──────────────────────────────────────────────
 if st.session_state.page == "optimize":
     from pages.optimize import show_optimize_page
     show_optimize_page()
@@ -402,7 +395,6 @@ else:
     from pages.home import show_home_page
     show_home_page()
 
-# ── Footer with slogan ─────────────────────────────────────────────────────
 st.markdown("""
 <div class="footer">
     <strong>Maiztimate</strong> — <em>Sa mais, dapat segurado ang imo ginansya, indi lang basta-basta.</em>
