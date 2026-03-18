@@ -51,10 +51,10 @@ def validate_chromosome(chromosome, seed_variety, fertilizer_data, farm_area_ha,
             errors.append(f"Fertilizer {fert_id} has non-positive amount")
 
         if 'max_fertilizer_types' in constraints['fertilizer']:
-        max_types = constraints['fertilizer']['max_fertilizer_types']
-        num_types = len(fert_comp)
-        if num_types > max_types:
-            errors.append(f"Number of fertilizer types ({num_types}) exceeds maximum allowed ({max_types})")
+            max_types = constraints['fertilizer']['max_fertilizer_types']
+            num_types = len(fert_comp)
+            if num_types > max_types:
+                errors.append(f"Number of fertilizer types ({num_types}) exceeds maximum allowed ({max_types})")
 
     return (len(errors) == 0, errors)
 

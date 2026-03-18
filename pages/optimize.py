@@ -39,9 +39,11 @@ def _format_peso(value: float) -> str:
 def _format_kg(value: float) -> str:
     return f"{value:,.0f} kg"
 
-def show_optimize_page():
 
-    st.markdown("""
+@st.cache_resource
+def _get_page_css():
+    """Cache the CSS styles to avoid re-rendering on every page load."""
+    return """
     <style>
     .block-container {
         padding-top: 4rem !important;
@@ -143,27 +145,70 @@ def show_optimize_page():
     .mcard .mval-red    { color: #b71c1c; font-size: 1.25rem; font-weight: 700; margin: 0; }
     .mcard .mval-profit { color: #1b5e20; font-size: 1.4rem;  font-weight: 700; margin: 0; }
 
-    /* ── Clean table ── */
+    /* ── Table container with side spacing ── */
+    .table-scroll-container {
+        padding: 0 0.75rem;
+        margin-bottom: 1rem;
+        overflow-x: visible;
+    }
+
+    /* ── Clean table (responsive & compact) ── */
     .clean-table {
         width: 100%;
         border-collapse: collapse;
-        font-size: 0.88rem;
+        font-size: 0.75rem;
     }
     .clean-table th {
         background: #2d6a4f;
         color: #fff;
-        padding: 0.55rem 0.9rem;
+        padding: 0.5rem 0.6rem;
         text-align: left;
-        font-size: 0.8rem;
+        font-size: 0.7rem;
         font-weight: 600;
+        white-space: normal;
+        line-height: 1.2;
     }
     .clean-table td {
-        padding: 0.5rem 0.9rem;
+        padding: 0.5rem 0.6rem;
         border-bottom: 1px solid #eef2ee;
         color: #333;
     }
+    /* Column-specific widths */
+    .clean-table th:nth-child(1) { width: 28%; }
+    .clean-table th:nth-child(2) { width: 14%; text-align: center; }
+    .clean-table th:nth-child(3) { width: 14%; text-align: center; }
+    .clean-table th:nth-child(4) { width: 16%; text-align: center; }
+    .clean-table th:nth-child(5) { width: 28%; text-align: right; }
+    
+    .clean-table td:nth-child(1) { width: 28%; }
+    .clean-table td:nth-child(2) { width: 14%; text-align: center; }
+    .clean-table td:nth-child(3) { width: 14%; text-align: center; }
+    .clean-table td:nth-child(4) { width: 16%; text-align: center; }
+    .clean-table td:nth-child(5) { width: 28%; text-align: right; }
+    
     .clean-table tr:nth-child(even) td { background: #f5faf5; }
     .clean-table tr:last-child td { background: #e8f5e9; font-weight: 700; }
+    
+    /* ── Responsive: Larger screens ── */
+    @media (min-width: 768px) {
+        .clean-table { font-size: 0.82rem; }
+        .clean-table th {
+            padding: 0.65rem 0.8rem;
+            font-size: 0.75rem;
+        }
+        .clean-table td { padding: 0.6rem 0.8rem; }
+        .table-scroll-container { padding: 0 1rem; }
+    }
+    
+    @media (min-width: 1024px) {
+        .clean-table { font-size: 0.88rem; }
+        .clean-table th {
+            padding: 0.75rem 1rem;
+            font-size: 0.8rem;
+        }
+        .clean-table td { padding: 0.7rem 1rem; }
+        .table-scroll-container { padding: 0 1.2rem; }
+    }
 
     /* ── Info card ── */
     .icard {
@@ -204,7 +249,12 @@ def show_optimize_page():
         margin-top: 0.5rem;
     }
     </style>
-    """, unsafe_allow_html=True)
+    """
+
+
+def show_optimize_page():
+    """Render the optimize page."""
+    st.markdown(_get_page_css(), unsafe_allow_html=True)
 
     st.markdown("""
     <div class="page-title">
@@ -442,13 +492,15 @@ def show_optimize_page():
 
             total_label = f"(×{farm_area:.0f} ha)" if farm_area > 1 else ""
             st.markdown(
+            f'<div class="table-scroll-container">'
             f'<table class="clean-table">'
             f'<tr><th>Fertilizer</th><th style="text-align:center;">Sacks/ha</th>'
             f'<th style="text-align:center;">kg/ha</th>'
-            f'<th style="text-align:center;">Total Sacks {total_label}</th><th style="text-align:right;">Cost</th></tr>'
+            f'<th style="text-align:center;">Total Sacks</th><th style="text-align:right;">Cost</th></tr>'
             f'{table_rows}'
             f'<tr><td colspan="3" style="text-align:right;"><strong>Total:</strong></td><td style="text-align:center;"><strong>{total_sacks:.2f}</strong></td><td style="text-align:right;">{_format_peso(fert_cost)}</td></tr>'
-            f'</table>',
+            f'</table>'
+            f'</div>',
             unsafe_allow_html=True)
 
             st.markdown('<p class="res-header">🧬 Nutrient Summary (NPK)</p>', unsafe_allow_html=True)
