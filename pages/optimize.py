@@ -270,8 +270,7 @@ def show_optimize_page():
         with c1:
             farm_area = st.number_input(
                 "Farm Size (hectares)",
-                min_value=1, max_value=100, value=1, step=1,
-                help="Minimum 1 hectare"
+                min_value=1, max_value=100, value=1, step=1
             )
         with c2:
             seed_variety = st.selectbox(
@@ -309,8 +308,7 @@ def show_optimize_page():
         with c5:
             soil_ph = st.number_input(
                 "Soil pH",
-                min_value=4.0, max_value=9.0, value=6.5, step=0.1,
-                help="Ideal range: 6.0 – 7.0"
+                min_value=4.0, max_value=9.0, value=6.5, step=0.1
             )
 
         c6, c7, c8 = st.columns(3)
@@ -339,7 +337,7 @@ def show_optimize_page():
             npk_warnings.append(f"K: {initial_k:.0f} > {RECOMMENDED_K}")
         
         if npk_warnings:
-            st.info(f"⚠️ Soil nutrient(s) exceed recommended: {', '.join(npk_warnings)} kg/ha", icon="ℹ️")
+            st.info(f"⚠️ Soil nutrient(s) exceed recommended: {', '.join(npk_warnings)} kg/ha")
 
         st.markdown("<br>", unsafe_allow_html=True)
 
